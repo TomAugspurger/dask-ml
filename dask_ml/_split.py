@@ -10,7 +10,7 @@ from sklearn.utils import check_random_state
 
 
 def train_test_split(*arrays, **options):
-    r"""Split arrays into random train and test subsets
+    """Split arrays into random train and test subsets
 
     Notes
     -----
@@ -18,12 +18,20 @@ def train_test_split(*arrays, **options):
 
     Parameters
     ----------
-    *arrays : array-like
-    test_size
-    train_size
-    random_state
-    shuffle
-    stratify
+    arrays : Sequence of array-like
+    test_size, train_size : int or float, optional
+        Integers represent the number of samples for each.
+
+        Floats between 0 and 1 represent the fraction for each.
+
+    random_state : int or RandomState, optional
+    shuffle : bool, default True
+    stratify : bool, default None
+       Not currently supported.
+
+    Returns
+    -------
+    arrays
     """
     # TODO(py3): keyword only arguments
     t = _validate_arrays(*arrays)
@@ -105,7 +113,7 @@ def split_dask_arrays(*arrays, random_state, train_size, test_size, shuffle):
 
 def split_dask_dataframes(*arrays, random_state, train_size, test_size,
                           shuffle):
-    test_size, train_size = _validate_sizes_decimal(test_size, train_size)
+    test_size, train_size = _validate_sizes_fraction(test_size, train_size)
     if shuffle is False:
         raise ValueError("'shuffle=False' is not supported for dask "
                          "dataframes.")
@@ -124,7 +132,7 @@ def _validate_shuffle_split(n_samples, test_size, train_size):
     return _split._validate_shuffle_split(n_samples, test_size, train_size)
 
 
-def _validate_sizes_decimal(test_size, train_size):
+def _validate_sizes_fraction(test_size, train_size):
     if not isinstance(train_size, numbers.Real) or not (0 < train_size < 1):
         raise ValueError("'train_size' must be a float between 0 and 1. "
                          "Got {} instead".format(train_size))
