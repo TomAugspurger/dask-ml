@@ -19,6 +19,11 @@ appropriate for parallel and distributed training.
 
 .. autosummary::
    :toctree: generated/
+
+   model-selection.train_test_split
+
+.. autosummary::
+   :toctree: generated/
    :template: class.rst
 
    model_selection.GridSearchCV
