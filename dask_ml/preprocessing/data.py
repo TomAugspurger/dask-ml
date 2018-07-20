@@ -480,6 +480,10 @@ class DummyEncoder(BaseEstimator, TransformerMixin):
         Dummy encodes all categorical dtype columns by default.
     drop_first : bool, default False
         Whether to drop the first category in each column.
+    sparse : bool, default False
+        Whether to use a sparse arrays for the dummy-encoded
+        columns. Passed through to :func:`pandas.get_dummies`
+        or :func:`dask.dataframe.get_dummies`.
 
     Attributes
     ----------
@@ -551,9 +555,10 @@ class DummyEncoder(BaseEstimator, TransformerMixin):
     Dask Name: get_dummies, 4 tasks
     """
 
-    def __init__(self, columns=None, drop_first=False):
+    def __init__(self, columns=None, drop_first=False, sparse=False):
         self.columns = columns
         self.drop_first = drop_first
+        self.sparse = sparse
 
     def fit(self, X, y=None):
         """Determine the categorical columns to be dummy encoded.
@@ -600,7 +605,7 @@ class DummyEncoder(BaseEstimator, TransformerMixin):
             sample = X._meta_nonempty
 
         self.transformed_columns_ = pd.get_dummies(
-            sample, drop_first=self.drop_first
+            sample, drop_first=self.drop_first, sparse=self.sparse
         ).columns
         return self
 
@@ -623,9 +628,13 @@ class DummyEncoder(BaseEstimator, TransformerMixin):
                 "columns. Got {!r}, expected {!r}".format(X.columns, self.columns)
             )
         if isinstance(X, pd.DataFrame):
-            return pd.get_dummies(X, drop_first=self.drop_first, columns=self.columns)
+            return pd.get_dummies(
+                X, drop_first=self.drop_first, columns=self.columns, sparse=self.sparse
+            )
         elif isinstance(X, dd.DataFrame):
-            return dd.get_dummies(X, drop_first=self.drop_first, columns=self.columns)
+            return dd.get_dummies(
+                X, drop_first=self.drop_first, columns=self.columns, sparse=self.sparse
+            )
         else:
             raise TypeError("Unexpected type {}".format(type(X)))
 

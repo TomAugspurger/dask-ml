@@ -311,8 +311,11 @@ class TestCategorizer(object):
 class TestDummyEncoder:
     @pytest.mark.parametrize("daskify", [False, True])
     @pytest.mark.parametrize("values", [True, False])
-    def test_basic(self, daskify, values):
-        de = dpp.DummyEncoder()
+    @pytest.mark.parametrize("sparse", [True, False])
+    def test_basic(self, daskify, values, sparse):
+        if sparse:
+            pytest.importorskip("dask", minversion="0.18.2")
+        de = dpp.DummyEncoder(sparse=sparse)
         df = dummy[["A", "D"]]
         if daskify:
             df = dd.from_pandas(df, 2)
