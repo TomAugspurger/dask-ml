@@ -105,6 +105,270 @@ class TokenIterator(object):
         return self.token if c == 0 else self.token + str(c)
 
 
+def _build_graph_single(
+    estimator,
+    cv,
+    scorer,
+    X,
+    y=None,
+    groups=None,
+    fit_params=None,
+    do_fit_and_score_=None,
+    error_score="raise",
+):
+    X, y, groups = to_indexable(X, y, groups)
+    cv = check_cv(cv, y, is_classifier(estimator))
+    # "pairwise" estimators require a different graph for CV splitting
+    is_pairwise = getattr(estimator, "_pairwise", False)
+
+    dsk = {}
+    X_name, y_name, groups_name = to_keys(dsk, X, y, groups)
+    n_splits = compute_n_splits(cv, X, y, groups)
+
+    if fit_params:
+        # A mapping of {name: (name, graph-key)}
+        param_values = to_indexable(*fit_params.values(), allow_scalars=True)
+        fit_params = {
+            k: (k, v) for (k, v) in zip(fit_params, to_keys(dsk, *param_values))
+        }
+    else:
+        fit_params = {}
+
+    main_token = tokenize(
+        normalize_estimator(estimator),
+        X_name,
+        y_name,
+        groups_name,
+        fit_params,
+        cv,
+        error_score == "raise",
+    )
+
+    cv_name = "cv-split-" + main_token
+    dsk[cv_name] = dsk[cv_name] = (
+        cv_split,
+        cv,
+        X_name,
+        y_name,
+        groups_name,
+        is_pairwise,
+    )
+
+    if do_fit_and_score_ is None:
+        fit_and_score = do_fit_and_score_single
+
+    scores = fit_and_score(
+        dsk,
+        main_token,
+        estimator,
+        cv_name,
+        X_name,
+        y_name,
+        fit_params,
+        n_splits,
+        error_score,
+        scorer,
+    )
+    cv_results_name = "cv-results-" + main_token
+    import pdb
+
+    pdb.set_trace()
+
+
+def do_fit_and_score_single(
+    dsk, main_token, est, cv, X, y, fit_params, n_splits, error_score, scorer
+):
+    X_train = (cv_extract, cv, X, y, True, True)
+    X_test = (cv_extract, cv, X, y, True, False)
+    y_train = (cv_extract, cv, X, y, False, True)
+    y_test = (cv_extract, cv, X, y, False, False)
+
+    # Fit the estimator on the training data
+    X_trains = [X_train]
+    y_trains = [y_train]
+
+    fit_ests = do_fit(
+        dsk,
+        TokenIterator(main_token),
+        est,
+        cv,
+        X_trains,
+        y_trains,
+        fit_params,
+        n_splits,
+        error_score,
+    )
+    score_name = "score-" + main_token
+
+    scores = []
+    scores_append = scores.append
+    for n in range(n_splits):
+        xtrain = X_train + (n,)
+        ytrain = y_train + (n,)
+
+        xtest = X_test + (n,)
+        ytest = y_test + (n,)
+
+        for (name, m) in fit_ests:
+            dsk[(score_name, m, n)] = (
+                score,
+                (name, m, n),
+                xtest,
+                ytest,
+                xtrain,
+                ytrain,
+                scorer,
+            )
+            scores_append((score_name, m, n))
+    return scores
+
+
+def do_fit_single(dsk, next_token, est, cv, Xs, ys, fit_params, n_splits, error_score):
+    if isinstance(est, Pipeline) and params is not None:
+        return _do_pipeline(
+            dsk,
+            next_token,
+            est,
+            cv,
+            fields,
+            tokens,
+            params,
+            Xs,
+            ys,
+            fit_params,
+            n_splits,
+            error_score,
+            False,
+        )
+    else:
+        n_and_fit_params = _get_fit_params(cv, fit_params, n_splits)
+
+        if params is None:
+            params = tokens = repeat(None)
+            fields = None
+
+        token = next_token(est)
+        est_type = type(est).__name__.lower()
+        est_name = "%s-%s" % (est_type, token)
+        fit_name = "%s-fit-%s" % (est_type, token)
+        dsk[est_name] = est
+
+        seen = {}
+        m = 0
+        out = []
+        out_append = out.append
+
+        for X, y, t, p in zip(Xs, ys, tokens, params):
+            if (X, y, t) in seen:
+                out_append(seen[X, y, t])
+            else:
+                for n, fit_params in n_and_fit_params:
+                    dsk[(fit_name, m, n)] = (
+                        fit,
+                        est_name,
+                        X + (n,),
+                        y + (n,),
+                        error_score,
+                        fields,
+                        p,
+                        fit_params,
+                    )
+                seen[(X, y, t)] = (fit_name, m)
+                out_append((fit_name, m))
+                m += 1
+
+        return out
+
+
+def do_fit_transform(
+    dsk,
+    next_token,
+    est,
+    cv,
+    fields,
+    tokens,
+    params,
+    Xs,
+    ys,
+    fit_params,
+    n_splits,
+    error_score,
+):
+    if isinstance(est, Pipeline) and params is not None:
+        return _do_pipeline(
+            dsk,
+            next_token,
+            est,
+            cv,
+            fields,
+            tokens,
+            params,
+            Xs,
+            ys,
+            fit_params,
+            n_splits,
+            error_score,
+            True,
+        )
+    elif isinstance(est, FeatureUnion) and params is not None:
+        return _do_featureunion(
+            dsk,
+            next_token,
+            est,
+            cv,
+            fields,
+            tokens,
+            params,
+            Xs,
+            ys,
+            fit_params,
+            n_splits,
+            error_score,
+        )
+    else:
+        n_and_fit_params = _get_fit_params(cv, fit_params, n_splits)
+
+        if params is None:
+            params = tokens = repeat(None)
+            fields = None
+
+        name = type(est).__name__.lower()
+        token = next_token(est)
+        fit_Xt_name = "%s-fit-transform-%s" % (name, token)
+        fit_name = "%s-fit-%s" % (name, token)
+        Xt_name = "%s-transform-%s" % (name, token)
+        est_name = "%s-%s" % (type(est).__name__.lower(), token)
+        dsk[est_name] = est
+
+        seen = {}
+        m = 0
+        out = []
+        out_append = out.append
+
+        for X, y, t, p in zip(Xs, ys, tokens, params):
+            if (X, y, t) in seen:
+                out_append(seen[X, y, t])
+            else:
+                for n, fit_params in n_and_fit_params:
+                    dsk[(fit_Xt_name, m, n)] = (
+                        fit_transform,
+                        est_name,
+                        X + (n,),
+                        y + (n,),
+                        error_score,
+                        fields,
+                        p,
+                        fit_params,
+                    )
+                    dsk[(fit_name, m, n)] = (getitem, (fit_Xt_name, m, n), 0)
+                    dsk[(Xt_name, m, n)] = (getitem, (fit_Xt_name, m, n), 1)
+                seen[X, y, t] = m
+                out_append(m)
+                m += 1
+
+        return [(fit_name, i) for i in out], [(Xt_name, i) for i in out]
+
+
 def build_graph(
     estimator,
     cv,
@@ -120,6 +384,7 @@ def build_graph(
     return_train_score=_RETURN_TRAIN_SCORE_DEFAULT,
     cache_cv=True,
     multimetric=False,
+    fit_and_score=None,
 ):
 
     X, y, groups = to_indexable(X, y, groups)
@@ -163,7 +428,10 @@ def build_graph(
     else:
         weights = None
 
-    scores = do_fit_and_score(
+    if fit_and_score is None:
+        fit_and_score = do_fit_and_score
+
+    scores = fit_and_score(
         dsk,
         main_token,
         estimator,
