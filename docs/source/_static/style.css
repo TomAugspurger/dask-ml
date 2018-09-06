@@ -18,6 +18,10 @@
   background: #303030;
 }
 
+.wy-nav-side {
+  position: absolute;
+}
+
 .wy-side-nav-search>a img.logo,
 .wy-side-nav-search .wy-dropdown>a img.logo {
   width: 10rem

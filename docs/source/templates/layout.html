@@ -1,0 +1,51 @@
+{% extends "!layout.html" %}
+{% set css_files = ["https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css", "https://cdnjs.cloudflare.com/ajax/libs/prism/1.6.0/themes/prism.min.css"] + css_files + ["_static/style.css", "_static/main-page.css"] %}
+
+{% block extrabody %}
+
+  <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+      <img src="_static/dask_icon_no_pad.svg" style="height: 2rem;">
+    </div>
+    <div class="navbar-dark bg-dark">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="navbar-item"><a class="nav-link" href="http://dask.org/why.html">Why Dask?</a></li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Documentation
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="http://dask.org/docs.html">Overview</a>
+            <a class="dropdown-item" href="http://dask.org/array.html">Arrays</a>
+            <a class="dropdown-item" href="http://dask.org/dataframe.html">Dataframes</a>
+            <a class="dropdown-item" href="http://ml.dask.org/">Machine Learning</a>
+            <a class="dropdown-item" href="http://dask.org/delayed.html">Custom Applications</a>
+            <a class="dropdown-item" href="http://dask.org/futures.html">Real Time</a>
+          </div>
+        </li>
+
+        <li class="navbar-item"><a class="nav-link" href="http://dask.org/install.html">Install</a></li>
+        <li class="navbar-item"><a class="nav-link" href="http://dask.org/setup.html">Deploy</a></li>
+        <li class="navbar-item"><a class="nav-link" href="https://github.com/dask/dask-tutorial">Tutorial</a></li>
+      </ul>
+    </div>
+  </nav>
+
+{% endblock extrabody %}
+
+{% block footer %}
+    <!-- Bootstrap core JavaScript
+      ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+              integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+              crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+{% endblock footer %}
