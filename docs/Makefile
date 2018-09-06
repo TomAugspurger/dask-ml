@@ -18,8 +18,8 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf source/auto_examples/
 
-html-noplot:
-	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+html-noexamples:
+	@$(SPHINXBUILD) -D nbsphinx_execute=never "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
