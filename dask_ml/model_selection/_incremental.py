@@ -1,16 +1,23 @@
 from __future__ import division
 
+import operator
 from copy import deepcopy
-
-from sklearn.base import clone
-from sklearn.utils import check_random_state
-from tornado import gen
 from time import time
 
 import dask
 import dask.array as da
-from dask.distributed import as_completed, default_client, futures_of, Future
+import numpy as np
+from dask.distributed import Future, default_client, futures_of, wait
 from distributed.utils import log_errors
+from sklearn.base import clone
+from sklearn.metrics.scorer import check_scoring
+from sklearn.model_selection import ParameterSampler
+from sklearn.utils import check_random_state
+from toolz import first
+from tornado import gen
+
+from ._search import _RETURN_TRAIN_SCORE_DEFAULT, DaskBaseSearchCV
+from ._split import train_test_split
 
 
 def _partial_fit(model_and_meta, X, y, fit_params):
@@ -64,8 +71,6 @@ def _create_model(model, ident, **params):
     """ Create a model by cloning and then setting params """
     with log_errors(pdb=True):
         model = clone(model).set_params(**params)
-        if hasattr(model, "initialize") and callable(model.initialize):
-            model.initialize()
         return model, {"model_id": ident, "params": params, "partial_fit_calls": 0}
 
 
@@ -77,7 +82,7 @@ def _fit(
     y_train,
     X_test,
     y_test,
-    additional_partial_fit_calls=None,
+    additional_calls,
     fit_params=None,
     scorer=None,
     random_state=None,
@@ -104,7 +109,7 @@ def _fit(
     if isinstance(X_test, da.Array):
         X_test = client.compute(X_test)
     else:
-        y_test = yield client.scatter(y_test)
+        X_test = yield client.scatter(X_test)
     if isinstance(y_test, da.Array):
         y_test = client.compute(y_test)
     else:
@@ -132,7 +137,6 @@ def _fit(
             L = list(range(len(X_train)))
             rng.shuffle(L)
             order.extend(L)
-
         j = order[partial_fit_calls]
         return X_train[j], y_train[j]
 
@@ -164,10 +168,8 @@ def _fit(
 
     new_scores = list(_scores.values())
     history = []
-    number_to_complete = len(models)
 
     # async for future, result in seq:
-    incremental = False
     while True:
         metas = yield client.gather(new_scores)
 
@@ -177,10 +179,7 @@ def _fit(
             info[ident].append(meta)
             history.append(meta)
 
-        time_start = time()
-        if additional_partial_fit_calls is None:
-            break
-        instructions = additional_partial_fit_calls(info)
+        instructions = additional_calls(info)
         bad = set(models) - set(instructions)
 
         # Delete the futures of bad models.  This cancels speculative tasks
@@ -199,9 +198,7 @@ def _fit(
             start = info[ident][-1]["partial_fit_calls"] + 1
             if k:
                 k -= 1
-                model = speculative.pop(ident, None)
-                if model is None:
-                    continue
+                model = speculative.pop(ident)
                 for i in range(k):
                     X_future, y_future = get_futures(start + i)
                     model = d_partial_fit(model, X_future, y_future, fit_params)
@@ -228,11 +225,23 @@ def _fit(
 
         new_scores = list(_scores2.values())
 
-        time_stop = time()
+    models = {k: client.submit(operator.getitem, v, 0) for k, v in models.items()}
+    yield wait(models)
     raise gen.Return((info, models, history))
 
 
-def fit(*args, **kwargs):
+def fit(
+    model,
+    params,
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    additional_calls,
+    fit_params=None,
+    scorer=None,
+    random_state=None,
+):
     """ Find a good model and search among a space of hyper-parameters
 
     This does a hyper-parameter search by creating many models and then fitting
@@ -250,42 +259,323 @@ def fit(*args, **kwargs):
     Parameters
     ----------
     model : Estimator
-    params : dict
-        parameter grid to be given to ParameterSampler
+    params : List[Dict]
+        Parameters to start training on model
     X_train : dask Array
     y_train : dask Array
     X_test : Array
-        Numpy array or small dask array.  Should fit in memory.
+        Numpy array or small dask array.  Should fit in single node's memory.
     y_test : Array
-        Numpy array or small dask array.  Should fit in memory.
-    start : int
-        Number of parameters to start with
+        Numpy array or small dask array.  Should fit in single node's memory.
+    additional_calls : callable
+        A function that takes information about scoring history per model and
+        returns the number of additional partial fit calls to run on each model
     fit_params : dict
         Extra parameters to give to partial_fit
-    random_state :
     scorer :
-    target : callable
-        A function that takes the start value and the current time step and
-        returns the number of desired models at that time step
+    random_state :
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from dask_ml.datasets import make_classification
     >>> X, y = make_classification(n_samples=5000000, n_features=20,
-    ...                            chunks=100000)
+    ...                            chunks=100000, random_state=0)
 
-    >>> model = SGDClassifier(tol=1e-3, penalty='elasticnet')
+    >>> from sklearn.linear_model import SGDClassifier
+    >>> model = SGDClassifier(tol=1e-3, penalty='elasticnet', random_state=0)
+
+    >>> from sklearn.model_selection import ParameterSampler
     >>> params = {'alpha': np.logspace(-2, 1, num=1000),
     ...           'l1_ratio': np.linspace(0, 1, num=1000),
     ...           'average': [True, False]}
+    >>> params = list(ParameterSampler(params, 10, random_state=0))
 
     >>> X_test, y_test = X[:100000], y[:100000]
     >>> X_train = X[100000:]
     >>> y_train = y[100000:]
 
-    >>> info, model, history = yield fit(model, params,
-    ...                                  X_train, y_train,
-    ...                                  X_test, y_test,
-    ...                                  start=100,
-    ...                                  fit_params={'classes': [0, 1]})
+    >>> def remove_worst(scores):
+    ...    last_score = {model_id: info[-1]['score']
+    ...                  for model_id, info in scores.items()}
+    ...    worst_score = min(last_score.values())
+    ...    out = {}
+    ...    for model_id, score in last_score.items():
+    ...        if score != worst_score:
+    ...            out[model_id] = 1  # do one more training step
+    ...    if len(out) == 1:
+    ...        out = {k: 0 for k in out}  # no more work to do, stops execution
+    ...    return out
+
+    >>> from dask.distributed import Client
+    >>> client = Client(processes=False)
+
+    >>> from dask_ml.model_selection._incremental import fit
+    >>> info, models, history = fit(model, params,
+    ...                             X_train, y_train,
+    ...                             X_test, y_test,
+    ...                             additional_calls=remove_worst,
+    ...                             fit_params={'classes': [0, 1]},
+    ...                             random_state=0)
+
+    >>> models
+    {2: <Future: status: finished, type: SGDClassifier, key: ...}
+    >>> models[2].result()
+    SGDClassifier(...)
+    >>> info[2][-1]  # doctest: +SKIP
+    {'model_id': 2,
+     'params': {'l1_ratio': 0.9529529529529529, 'average': False,
+                'alpha': 0.014933932161242525},
+     'partial_fit_calls': 8,
+     'partial_fit_time': 0.17334818840026855,
+     'score': 0.58765,
+     'score_time': 0.031442880630493164}
+
+    Returns
+    -------
+    info : Dict[int, List[Dict]]
+        Scoring history of each successful model, keyed by model ID.
+        This has the parameters, scores, and timing information over time
+    models : Dict[int, Future]
+        Dask futures pointing to trained models
+    history : List[Dict]
+        A history of all models scores over time
     """
-    return default_client().sync(_fit, *args, **kwargs)
+    return default_client().sync(
+        _fit,
+        model,
+        params,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        additional_calls,
+        fit_params=fit_params,
+        scorer=scorer,
+        random_state=random_state,
+    )
+
+
+# ----------------------------------------------------------------------------
+# Base class for scikit-learn compatible estimators using fit
+# ----------------------------------------------------------------------------
+
+
+class BaseIncrementalSearchCV(DaskBaseSearchCV):
+    """Base class for estimators using the incremental `fit`.
+
+    Subclasses must implement the following abstract methods
+
+    * _get_ids_and_args : Build the dict of
+       ``{model_id : (param_list, additional_calls)}``
+        that are eventually passed to `fit`
+    * _get_cv_results : Build the dict containing the CV results.
+    * _get_best_estimator : Select the best estimator from the set of
+      fitted estimators
+    * _update_results : Update self with attributes from the fitted
+      esimators.
+    """
+
+    def __init__(
+        self,
+        estimator,
+        params,
+        test_size=0.15,
+        random_state=None,
+        scoring=None,
+        iid=True,
+        refit=True,
+        cv=None,
+        error_score="raise",
+        return_train_score=_RETURN_TRAIN_SCORE_DEFAULT,
+        scheduler=None,
+        n_jobs=-1,
+        cache_cv=True,
+    ):
+        # TODO: find the subset of sensible parameters.
+        self.params = params
+        self.test_size = test_size
+        self.random_state = random_state
+        super(BaseIncrementalSearchCV, self).__init__(
+            estimator,
+            scoring=scoring,
+            iid=iid,
+            refit=refit,
+            cv=cv,
+            error_score=error_score,
+            return_train_score=return_train_score,
+            scheduler=scheduler,
+            n_jobs=n_jobs,
+            cache_cv=cache_cv,
+        )
+
+    def _get_cv(self, X, y):
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=self.test_size
+        )
+        return X_train, X_test, y_train, y_test
+
+    def _get_ids_and_args(self):
+        # type: () -> Dict[int, Tuple(List[Dict], Callable)]
+        """Abstract method for generating the argumnets passed to `fit`.
+
+        Returns
+        -------
+        ids_and_args : Dict
+            Should have integers for keys and the following arguments
+
+            * param_list : List[Dict]
+            * additional_fit_calls : Callable
+        """
+        raise NotImplementedError
+
+    def _get_cv_results(self, results):
+        # type: (Dict) -> Dict
+        """Construct the CV results.
+
+        Should have the following keys:
+
+        * params
+        * test_score
+        * mean_test_score
+        * rank_test_score
+        * mean_partial_fit_time
+        * std_partial_fit_time
+        * mean_score_time
+        * std_score_time
+        * partial_fit_calls
+        * model_id
+        """
+        raise NotImplementedError
+
+    def _get_best_estimator(self, results):
+        # type: (Dict) -> Estimator
+        """Select the best estimator from the set of estimators."""
+        raise NotImplementedError
+
+    def _update_results(self, results):
+        # type: (Dict) -> None
+        """Update `self` with attributes extracted from `results`."""
+        raise NotImplementedError
+
+    def fit(self, X, y, **fit_params):
+        """Find the best parameters for a particular model
+        Parameters
+        ----------
+        X, y : array-like
+        **fit_params
+            Additional partial fit keyword arguments for the estimator.
+        """
+        ids_and_args = self._get_ids_and_args()
+
+        X_train, X_test, y_train, y_test = self._get_cv(X, y)
+        self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
+
+        results = {
+            model_id: fit(
+                self.estimator,
+                param_list,
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                additional_calls=additional_calls,
+                fit_params=fit_params,
+                scorer=self.scorer_,
+                random_state=self.random_state,
+            )
+            for model_id, (param_list, additional_calls) in ids_and_args.items()
+        }
+        self._update_results(results)
+        self.cv_results_ = self._get_cv_results(results)
+        self.best_estimator_ = self._get_best_estimator(results)
+        return self
+
+
+class IncrementalRandomizedSearchCV(BaseIncrementalSearchCV):
+    def __init__(
+        self,
+        estimator,
+        param_distribution,
+        n_iter=10,
+        test_size=0.15,
+        random_state=None,
+        scoring=None,
+        iid=True,
+        refit=True,
+        cv=None,
+        error_score="raise",
+        return_train_score=_RETURN_TRAIN_SCORE_DEFAULT,
+        scheduler=None,
+        n_jobs=-1,
+        cache_cv=True,
+    ):
+        self.n_iter = 10
+        super(IncrementalRandomizedSearchCV, self).__init__(
+            estimator,
+            param_distribution,
+            test_size,
+            random_state,
+            scoring,
+            iid,
+            refit,
+            cv,
+            error_score,
+            return_train_score,
+            scheduler,
+            n_jobs,
+            cache_cv,
+        )
+
+    def _get_cv_results(self, results):
+        # TODO: split this unpacking...
+        info, model, history = results[0]
+        model_id = first(info.keys())
+        info = info[model_id]
+        # ... from this cv building. Hopefully this can be mostly shared.
+        scores = np.array([v["score"] for v in info])
+        ranks = np.argsort(-1 * scores) + 1
+
+        cv_results = {
+            "params": [v["params"] for v in info],
+            "test_score": scores,
+            "mean_test_score": scores,  # for sklearn comptability
+            "rank_test_score": ranks,
+            # TODO: check partial_fit_time
+            "mean_partial_fit_time": np.mean([v["partial_fit_time"] for v in info]),
+            "std_partial_fit_time": np.std([v["partial_fit_time"] for v in info]),
+            "mean_score_time": np.mean([v["score_time"] for v in info]),
+            "std_score_time": np.std([v["score_time"] for v in info]),
+            "partial_fit_calls": [v["partial_fit_calls"] for v in info],
+            "model_id": model_id,
+        }
+        return cv_results
+
+    def _get_ids_and_args(self):
+        return {0: (ParameterSampler(self.params, self.n_iter), remove_worst)}
+
+    def _update_results(self, results):
+        self.info_, self.models_, self.history_ = results[0]
+
+    def _get_best_estimator(self, results):
+        _, models, _ = results[0]
+        f = first(models.values())
+        wait(f)
+        return f.result()
+
+
+def remove_worst(scores):
+    # type: Dict[Int, Dict] -> Dict[Int, Int]
+    """Default `additional_calls` strategy for IncrementalSearch.
+
+    Removes the lowest scoring model from a batch of models.
+    """
+    last_score = {model_id: info[-1]["score"] for model_id, info in scores.items()}
+    worst_score = min(last_score.values())
+    out = {}
+    for model_id, score in last_score.items():
+        if score != worst_score:
+            out[model_id] = 1  # do one more training step
+    if len(out) == 1:
+        out = {k: 0 for k in out}  # no more work to do, stops execution
+    return out
