@@ -2,19 +2,11 @@ from __future__ import division
 
 import logging
 import math
-from time import time
 
 import numpy as np
 from sklearn.model_selection import ParameterSampler
-from sklearn.metrics.scorer import check_scoring
-from tornado import gen
 
-import dask.array as da
-from dask.distributed import default_client
-
-from ._split import train_test_split
-from ._search import DaskBaseSearchCV
-from ._incremental import fit as _incremental_fit
+from ._incremental import BaseIncrementalSearchCV
 from ._successive_halving import _SHA
 
 logger = logging.getLogger(__name__)
@@ -45,7 +37,7 @@ def _get_hyperband_params(R, eta=3):
     return list(map(int, N)), R, brackets
 
 
-class HyperbandCV(DaskBaseSearchCV):
+class HyperbandCV(BaseIncrementalSearchCV):
     """Find the best parameters for a particular model with an adaptive
     cross-validation algorithm.
 
@@ -198,31 +190,18 @@ class HyperbandCV(DaskBaseSearchCV):
         tol=0.001,
         verbose=0,
     ):
-        self.model = model
-        self.params = params
         self.max_iter = max_iter
         self.aggressiveness = aggressiveness
         self.test_size = test_size
-        self.random_state = random_state
         self.patience = patience
         self.tol = tol
         self.verbose = verbose
 
-        super(HyperbandCV, self).__init__(model, scoring=scoring)
+        super(HyperbandCV, self).__init__(
+            model, params, scoring=scoring, random_state=random_state
+        )
 
-    def fit(self, X, y, **fit_params):
-        """Find the best parameters for a particular model
-
-        Parameters
-        ----------
-        X, y : array-like
-        **fit_params
-            Additional partial fit keyword arguments for the estimator.
-        """
-        return default_client().sync(self._fit, X, y, **fit_params)
-
-    @gen.coroutine
-    def _fit(self, X, y, **fit_params):
+    def _get_ids_and_args(self):
         N, R, brackets = _get_hyperband_params(self.max_iter, eta=self.aggressiveness)
         SHAs = {
             b: _SHA(
@@ -243,87 +222,10 @@ class HyperbandCV(DaskBaseSearchCV):
         else:
             param_lists = [list(ParameterSampler(self.params, n)) for n in N]
 
-        if isinstance(X, np.ndarray):
-            X = da.from_array(X, chunks=X.shape)
-        if isinstance(y, np.ndarray):
-            y = da.from_array(y, chunks=y.shape)
-        r = train_test_split(X, y, random_state=self.random_state)
-        X_train, X_test, y_train, y_test = r
-
-        # We always want a concrete scorer because we're always scoring NumPy arrays
-        self.scorer_ = check_scoring(self.model, scoring=self.scoring)
-
-        hists = {}
-        params = {}
-        models = {}
-
-        _start = time()
-        results = yield {
-            bracket: _incremental_fit(
-                self.model,
-                param_list,
-                X_train,
-                y_train,
-                X_test,
-                y_test,
-                additional_partial_fit_calls=SHA.fit,
-                fit_params=fit_params,
-                scorer=self.scorer_,
-                random_state=self.random_state,
-            )
+        return {
+            bracket: (param_list, SHA)
             for (bracket, SHA), param_list in zip(SHAs.items(), param_lists)
         }
-        self._fit_time = time() - _start
-
-        infos = {}
-        for (bracket, result), param_list in zip(results.items(), param_lists):
-            # first argument is the information on the best model; no need with
-            # cv_results_
-            b_info, b_models, hist = result
-            hists[bracket] = hist
-            params[bracket] = param_list
-            models[bracket] = b_models
-            infos[bracket] = b_info
-
-        # Recreating the scores for each model
-        key = lambda bracket, ident: "bracket={}-{}".format(bracket, ident)
-        cv_results, best_idx, best_model_id = _get_cv_results(hists, params, key=key)
-        best_model = [
-            model_future
-            for bracket, bracket_models in models.items()
-            for model_id, model_future in bracket_models.items()
-            if best_model_id == key(bracket, model_id)
-        ]
-        assert len(best_model) == 1
-
-        # Make sure we get the best model
-        self.best_estimator_ = (yield best_model[0])[0]
-
-        # Clean up models we're hanging onto
-        brackets = list(models.keys())
-        model_ids = {b: list(b_models.keys()) for b, b_models in models.items()}
-        for bracket in brackets:
-            for model_id in model_ids[bracket]:
-                del models[bracket][model_id]
-        self.cv_results_ = cv_results
-        self.best_index_ = best_idx
-        self.n_splits_ = 1
-        self.multimetric_ = False
-
-        meta, _ = _get_meta(hists, brackets, key=key)
-
-        for bracket, SHA in SHAs.items():
-            for h in SHA._history:
-                h["model_id"] = key(bracket, h["model_id"])
-                h["bracket"] = bracket
-        self.history_ = sum([SHA._history for SHA in SHAs.values()], [])
-
-        self.metadata_ = {
-            "models": sum(m["models"] for m in meta),
-            "partial_fit_calls": sum(m["partial_fit_calls"] for m in meta),
-            "brackets": meta,
-        }
-        raise gen.Return(self)
 
     def metadata(self):
         """Get information about how much computation is required for

@@ -1,7 +1,8 @@
-import numpy as np
 import math
-import toolz
 from time import time
+
+import numpy as np
+import toolz
 
 
 def _get_hist(info):
@@ -66,7 +67,6 @@ def stop_on_plateau(info, patience=10, tol=0.001, max_iter=None):
 
 
 class _HistoryRecorder:
-
     def __init__(self, fn, *args, **kwargs):
         self.fn = fn
         self.args = args
@@ -82,7 +82,6 @@ class _HistoryRecorder:
 
 
 class _SHA:
-
     def __init__(
         self, n, r, eta=3, limit=None, patience=10, tol=0.001, bracket=0, verbose=0
     ):
@@ -198,7 +197,8 @@ class _SHA:
 
         if self.verbose > 0:
             msg = (
-                "[CV] Found score={score} at {time:0.3f}s for Hyperband bracket={bracket}"
+                "[CV] Found score={score} at {time:0.3f}s "
+                "for Hyperband bracket={bracket}"
             )
             _time = time() - self._start_time
             _bracket = self.bracket
