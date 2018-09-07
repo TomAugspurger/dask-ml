@@ -1,5 +1,6 @@
 from __future__ import division
 
+import copy
 import logging
 import math
 
@@ -120,6 +121,9 @@ class HyperbandCV(BaseIncrementalSearchCV):
 
     metadata : dict
         Information about every model to be trained.
+    metadata_ : dict
+        Information about every model to be trained. These may differ as
+        `metadata_` contains the *actual* number of partial fit calls.
     history_ : list of dicts
         Information about every model after every time it is scored.
     best_params_ : dict
@@ -225,6 +229,20 @@ class HyperbandCV(BaseIncrementalSearchCV):
             bracket: (param_list, SHA)
             for (bracket, SHA), param_list in zip(SHAs.items(), param_lists)
         }
+
+    def _update_results(self, results):
+        meta = copy.deepcopy(self.metadata)
+        brackets = meta["brackets"]
+        bracket_ids_brackets = [
+            (int(bracket["bracket"].split("=")[1]), bracket) for bracket in brackets
+        ]
+
+        for bracket_id, bracket in bracket_ids_brackets:
+            hist = results[bracket_id][2]
+            # this mutats meta inplace
+            bracket["partial_fit_calls"] = sum(x["partial_fit_calls"] for x in hist)
+
+        self.metadata_ = meta
 
     @property
     def metadata(self):

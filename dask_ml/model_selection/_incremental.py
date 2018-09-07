@@ -543,7 +543,6 @@ class BaseIncrementalSearchCV(DaskBaseSearchCV):
             for model_id, (param_list, additional_calls) in ids_and_args.items()
         }
         results = self._process_results(results)
-        self._update_results(results)
         cv_results = self._get_cv_results(results)
         best_estimator, best_index = self._get_best(results, cv_results)
 
@@ -562,6 +561,7 @@ class BaseIncrementalSearchCV(DaskBaseSearchCV):
         self.best_index_ = best_index
         self.n_splits_ = 1
         self.multimetric_ = False  # TODO: is this always true?
+        self._update_results(results)
         return self
 
 
