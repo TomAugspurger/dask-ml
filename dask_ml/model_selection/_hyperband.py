@@ -282,65 +282,6 @@ class HyperbandCV(BaseIncrementalSearchCV):
         return self._metadata
 
 
-def _get_cv_results(hists, params, key=None):
-    if key is None:
-        key = lambda bracket, ident: "bracket={}-{}".format(bracket, ident)
-    info = {
-        key(bracket, h["model_id"]): {
-            "bracket": bracket,
-            "score": None,
-            "partial_fit_calls": -np.inf,
-            "fit_times": [],
-            "score_times": [],
-            "model_id": h["model_id"],
-            "params": param,
-        }
-        for bracket, hist in hists.items()
-        for h, param in zip(hist, params[bracket])
-    }
-
-    for bracket, hist in hists.items():
-        for h in hist:
-            k = key(bracket, h["model_id"])
-            if info[k]["partial_fit_calls"] < h["partial_fit_calls"]:
-                info[k]["partial_fit_calls"] = h["partial_fit_calls"]
-                info[k]["score"] = h["score"]
-                info[k]["fit_times"] += [h["partial_fit_time"]]
-                info[k]["score_times"] += [h["score_time"]]
-
-    info = list(info.values())
-    scores = np.array([v["score"] for v in info])
-    idents = [key(v["bracket"], v["model_id"]) for v in info]
-
-    best_idx = int(np.argmax(scores))
-    best_ident = idents[best_idx]
-
-    ranks = np.argsort(-1 * scores) + 1
-
-    def get_map(fn, key, list_):
-        return np.array([fn(dict_[key]) for dict_ in list_])
-
-    cv_results = {
-        "params": [v["params"] for v in info],
-        "test_score": scores,
-        "mean_test_score": scores,  # for sklearn comptability
-        "rank_test_score": ranks,
-        "mean_partial_fit_time": get_map(np.mean, "fit_times", info),
-        "std_partial_fit_time": get_map(np.std, "fit_times", info),
-        "mean_score_time": get_map(np.mean, "score_times", info),
-        "std_score_time": get_map(np.std, "score_times", info),
-        "partial_fit_calls": [v["partial_fit_calls"] for v in info],
-        "model_id": idents,
-    }
-    params = sum(params.values(), [])
-    all_params = {k for param in params for k in param}
-    flat_params = {
-        "param_" + k: [param.get(k, None) for param in params] for k in all_params
-    }
-    cv_results.update(flat_params)
-    return cv_results, best_idx, best_ident
-
-
 def _hyperband_paper_alg(R, eta=3):
     """
     Algorithm 1 from the Hyperband paper [1]_.
