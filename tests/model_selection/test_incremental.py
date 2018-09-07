@@ -18,12 +18,12 @@ from dask_ml.model_selection._incremental import (
 )
 
 
-@gen_cluster(client=True, timeout=None)
+@gen_cluster(client=True, timeout=60)
 def test_basic(c, s, a, b):
     X, y = make_classification(n_samples=1000, n_features=5, chunks=100)
     model = SGDClassifier(tol=1e-3, penalty="elasticnet")
 
-    params = {"alpha": np.logspace(-2, 1, num=4), "l1_ratio": [0.01, 1.0]}
+    params = {"alpha": np.logspace(-2, 1, num=50), "l1_ratio": [0.01, 1.0]}
 
     X_test, y_test = X[:100], y[:100]
     X_train = X[100:]
@@ -128,7 +128,7 @@ def test_partial_fit_doesnt_mutate_inputs():
     assert new_meta2 != new_meta
 
 
-@gen_cluster(client=True, timeout=None)
+@gen_cluster(client=True, timeout=60)
 def test_explicit(c, s, a, b):
     X, y = make_classification(n_samples=1000, n_features=10, chunks=(200, 10))
     model = SGDClassifier(tol=1e-3, penalty="elasticnet")
