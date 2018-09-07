@@ -130,7 +130,7 @@ def test_hyperband_mirrors_paper(loop, max_iter, aggressiveness):
                 aggressiveness=aggressiveness,
             )
             alg.fit(X, y)
-            metadata = alg.metadata()
+            metadata = alg.metadata
             paper_iters = [b.pop("iters") for b in metadata["brackets"]]
             actual_iters = [b.pop("iters") for b in alg.metadata_["brackets"]]
             assert metadata == alg.metadata_
@@ -152,16 +152,15 @@ def test_hyperband_patience(loop):  # noqa: F811
             alg.fit(X, y)
 
             actual_iters = [b.pop("iters") for b in alg.metadata_["brackets"]]
-            paper_iters = [b.pop("iters") for b in alg.metadata()["brackets"]]
+            paper_iters = [b.pop("iters") for b in alg.metadata["brackets"]]
             for paper_iter, actual_iter in zip(paper_iters, actual_iters):
                 paper_iter = {k for k in paper_iter if k <= 15}
                 assert set(paper_iter).issubset(actual_iter)
                 assert all(b_iter <= 15 for b_iter in actual_iter)
             assert (
-                alg.metadata_["partial_fit_calls"]
-                <= alg.metadata()["partial_fit_calls"]
+                alg.metadata_["partial_fit_calls"] <= alg.metadata["partial_fit_calls"]
             )
-            assert alg.metadata_["models"] == alg.metadata()["models"]
+            assert alg.metadata_["models"] == alg.metadata["models"]
 
 
 def test_integration(loop):  # noqa: F811

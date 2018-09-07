@@ -118,10 +118,8 @@ class HyperbandCV(BaseIncrementalSearchCV):
         * ``partial_fit_calls``
         * ``params``
 
-    metadata_ : dict
-        Information about every model that was trained. This variable can also
-        be obtained without fitting through
-        :func:`~dask_ml.model_selection.HyperbandCV.metadata`.
+    metadata : dict
+        Information about every model to be trained.
     history_ : list of dicts
         Information about every model after every time it is scored.
     best_params_ : dict
@@ -196,6 +194,7 @@ class HyperbandCV(BaseIncrementalSearchCV):
         self.patience = patience
         self.tol = tol
         self.verbose = verbose
+        self._metadata = None
 
         super(HyperbandCV, self).__init__(
             model, params, scoring=scoring, random_state=random_state
@@ -227,6 +226,7 @@ class HyperbandCV(BaseIncrementalSearchCV):
             for (bracket, SHA), param_list in zip(SHAs.items(), param_lists)
         }
 
+    @property
     def metadata(self):
         """Get information about how much computation is required for
         :func:`~dask_ml.model_selection.HyperbandCV.fit`. This can be called
@@ -245,49 +245,23 @@ class HyperbandCV(BaseIncrementalSearchCV):
         ------
         This algorithm runs several loops in an "embarassingly parallel"
         manner. The ``brackets`` key represents each of these loops.
-
         """
-        bracket_info = _hyperband_paper_alg(self.max_iter, eta=self.aggressiveness)
-        num_models = sum(b["models"] for b in bracket_info)
-        for bracket in bracket_info:
-            bracket["iters"].update({1})
-            bracket["iters"] = sorted(list(bracket["iters"]))
-        num_partial_fit = sum(b["partial_fit_calls"] for b in bracket_info)
-        bracket_info = reversed(sorted(bracket_info, key=lambda x: x["bracket"]))
+        if self._metadata is None:
+            bracket_info = _hyperband_paper_alg(self.max_iter, eta=self.aggressiveness)
+            num_models = sum(b["models"] for b in bracket_info)
+            for bracket in bracket_info:
+                bracket["iters"].update({1})
+                bracket["iters"] = sorted(list(bracket["iters"]))
+            num_partial_fit = sum(b["partial_fit_calls"] for b in bracket_info)
+            bracket_info = reversed(sorted(bracket_info, key=lambda x: x["bracket"]))
 
-        info = {
-            "partial_fit_calls": num_partial_fit,
-            "models": num_models,
-            "brackets": list(bracket_info),
-        }
-        return info
-
-
-def _get_meta(hists, brackets, key=None):
-    if key is None:
-        key = lambda bracket, ident: "bracket={}-{}".format(bracket, ident)
-    meta_ = []
-    history_ = {}
-    for bracket in brackets:
-        hist = hists[bracket]
-
-        info_hist = {key(bracket, h["model_id"]): [] for h in hist}
-        for h in hist:
-            info_hist[key(bracket, h["model_id"])] += [dict(bracket=bracket, **h)]
-        hist = info_hist
-        history_.update(hist)
-
-        calls = {k: max(hi["partial_fit_calls"] for hi in h) for k, h in hist.items()}
-        iters = {hi["partial_fit_calls"] for h in hist.values() for hi in h}
-        meta_ += [
-            {
-                "bracket": "bracket=" + str(bracket),
-                "iters": sorted(list(iters)),
-                "models": len(hist),
-                "partial_fit_calls": sum(calls.values()),
+            info = {
+                "partial_fit_calls": num_partial_fit,
+                "models": num_models,
+                "brackets": list(bracket_info),
             }
-        ]
-    return meta_, history_
+            self._metadata = info
+        return self._metadata
 
 
 def _get_cv_results(hists, params, key=None):
