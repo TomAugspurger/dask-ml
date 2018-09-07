@@ -236,10 +236,12 @@ class HyperbandCV(BaseIncrementalSearchCV):
         bracket_ids_brackets = [
             (int(bracket["bracket"].split("=")[1]), bracket) for bracket in brackets
         ]
+        # we need to update iters and partial_fit_calls based on actual numbers
 
         for bracket_id, bracket in bracket_ids_brackets:
             hist = results[bracket_id][2]
-            # this mutats meta inplace
+            # this mutats meta inplace (but not self.metadata)
+            bracket["iters"] = sorted(list({h["partial_fit_calls"] for h in hist}))
             bracket["partial_fit_calls"] = sum(x["partial_fit_calls"] for x in hist)
 
         self.metadata_ = meta
