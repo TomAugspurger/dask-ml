@@ -12,7 +12,7 @@ from .data import (
     Categorizer,
     DummyEncoder,
     OrdinalEncoder,
-    PolynomialFeatures
+    PolynomialFeatures,
 )
 from .label import LabelEncoder
 
@@ -26,7 +26,7 @@ __all__ = [
     "DummyEncoder",
     "OrdinalEncoder",
     "LabelEncoder",
-    "PolynomialFeatures"
+    "PolynomialFeatures",
 ]
 
 if SK_VERSION >= parse("0.20.0.dev0"):
