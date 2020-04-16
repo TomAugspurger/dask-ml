@@ -19,7 +19,6 @@
 #
 import packaging.version
 
-import dask_sphinx_theme
 from dask_ml import __version__ as version
 
 # import sys
@@ -45,14 +44,6 @@ extensions = [
     "IPython.sphinxext.ipython_directive",
     "numpydoc",
 ]
-
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.6", None),
-    "sklearn": ("http://scikit-learn.org/stable/", None),
-    "dask": ("https://docs.dask.org/en/latest/", None),
-    "distributed": ("https://distributed.dask.org/en/latest/", None),
-    "dask_glm": ("http://dask-glm.readthedocs.io/en/latest/", None),
-}
 
 numpydoc_class_members_toctree = False
 autodoc_default_flags = ["members", "inherited-members"]
@@ -105,9 +96,8 @@ todo_include_todos = False
 # -- Options for HTML output ----------------------------------------------
 
 
-html_theme = "dask_sphinx_theme"
-
-html_theme_path = [dask_sphinx_theme.get_html_theme_path()]
+# html_theme = "dask_sphinx_theme"
+# html_theme_path = [dask_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -181,3 +171,75 @@ extlinks = {
     "issue": ("https://github.com/dask/dask-ml/issues/%s", "GH#"),
     "pr": ("https://github.com/dask/dask-ml/pull/%s", "GH#"),
 }
+
+
+pages = [
+    "changelog",
+    "clustering",
+    "compose",
+    "contributing",
+    "cross_validation",
+    "examples",
+    "glm",
+    "history",
+    "hyper-parameter-search",
+    "incremental",
+    "index",
+    "install",
+    "joblib",
+    "meta-estimators",
+    "modules/api",
+    "modules/generated/dask_ml.cluster.KMeans",
+    "modules/generated/dask_ml.cluster.SpectralClustering",
+    "modules/generated/dask_ml.decomposition.PCA",
+    "modules/generated/dask_ml.decomposition.TruncatedSVD",
+    "modules/generated/dask_ml.feature_extraction.text.FeatureHasher",
+    "modules/generated/dask_ml.feature_extraction.text.HashingVectorizer",
+    "modules/generated/dask_ml.impute.SimpleImputer",
+    "modules/generated/dask_ml.linear_model.LinearRegression",
+    "modules/generated/dask_ml.linear_model.LogisticRegression",
+    "modules/generated/dask_ml.linear_model.PoissonRegression",
+    "modules/generated/dask_ml.metrics.accuracy_score",
+    "modules/generated/dask_ml.metrics.log_loss",
+    "modules/generated/dask_ml.metrics.mean_absolute_error",
+    "modules/generated/dask_ml.metrics.mean_squared_error",
+    "modules/generated/dask_ml.metrics.r2_score",
+    "modules/generated/dask_ml.model_selection.GridSearchCV",
+    "modules/generated/dask_ml.model_selection.HyperbandSearchCV",
+    "modules/generated/dask_ml.model_selection.IncrementalSearchCV",
+    "modules/generated/dask_ml.model_selection.KFold",
+    "modules/generated/dask_ml.model_selection.RandomizedSearchCV",
+    "modules/generated/dask_ml.model_selection.ShuffleSplit",
+    "modules/generated/dask_ml.model_selection.SuccessiveHalvingSearchCV",
+    "modules/generated/dask_ml.model_selection.train_test_split",
+    "modules/generated/dask_ml.preprocessing.BlockTransformer",
+    "modules/generated/dask_ml.preprocessing.Categorizer",
+    "modules/generated/dask_ml.preprocessing.DummyEncoder",
+    "modules/generated/dask_ml.preprocessing.LabelEncoder",
+    "modules/generated/dask_ml.preprocessing.MinMaxScaler",
+    "modules/generated/dask_ml.preprocessing.OrdinalEncoder",
+    "modules/generated/dask_ml.preprocessing.PolynomialFeatures",
+    "modules/generated/dask_ml.preprocessing.QuantileTransformer",
+    "modules/generated/dask_ml.preprocessing.RobustScaler",
+    "modules/generated/dask_ml.preprocessing.StandardScaler",
+    "modules/generated/dask_ml.wrappers.Incremental",
+    "modules/generated/dask_ml.wrappers.ParallelPostFit",
+    "modules/generted/dask_ml.compose.ColumnTransformer",
+    "modules/generted/dask_ml.compose.make_column_transformer",
+    "preprocessing",
+    "roadmap",
+    "templates/class",
+    "templates/class_with_call",
+    "templates/class_without_init",
+    "templates/deprecated_class",
+    "templates/deprecated_class_with_call",
+    "templates/deprecated_class_without_init",
+    "templates/deprecated_function",
+    "templates/function",
+    "templates/numpydoc_docstring",
+    "xgboost",
+]
+
+html_additional_pages = {page: "redirect.html" for page in pages}
+
+html_context = {"redirects": {page: f"https://ml.dask.org/{page}" for page in pages}}
