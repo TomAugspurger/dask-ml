@@ -339,10 +339,17 @@ class QuantileTransformer(sklearn.preprocessing.QuantileTransformer):
         quantiles = [da.percentile(col, references) for col in X.T]
         (self.quantiles_,) = compute(da.vstack(quantiles).T)
 
+    def transform(self, X):
+        return self._transform(X)
+
+    def inverse_transform(self, X):
+        return self._transform(X, inverse=True)
+
     def _transform(
         self, X: Union[ArrayLike, DataFrameType], inverse: bool = False
     ) -> Union[ArrayLike, DataFrameType]:
-        X = X.copy()  # ...
+        # X = X.copy()
+        X = check_array(X, accept_dask_dataframe=True, accept_multiple_blocks=True)
         transformed = [
             self._transform_col(
                 X[:, feature_idx], self.quantiles_[:, feature_idx], inverse

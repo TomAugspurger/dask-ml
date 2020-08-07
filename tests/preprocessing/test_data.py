@@ -225,12 +225,12 @@ class TestQuantileTransformer:
 
         X = rs.uniform(size=(1000, 3), chunks=50)
         a.fit(X)
-        b.fit(X)
+        b.fit(X.compute())
         assert_estimator_equal(a, b, atol=0.02)
 
         # set the quantiles, so that from here out, we're exact
         a.quantiles_ = b.quantiles_
-        assert_eq_ar(a.transform(X), b.transform(X), atol=1e-7)
+        assert_eq_ar(a.transform(X), b.transform(X.compute()), atol=1e-7)
         assert_eq_ar(X, a.inverse_transform(a.transform(X)))
 
     @pytest.mark.parametrize(
