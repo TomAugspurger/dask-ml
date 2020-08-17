@@ -348,8 +348,11 @@ class QuantileTransformer(sklearn.preprocessing.QuantileTransformer):
     def _transform(
         self, X: Union[ArrayLike, DataFrameType], inverse: bool = False
     ) -> Union[ArrayLike, DataFrameType]:
-        # X = X.copy()
         X = check_array(X, accept_dask_dataframe=True, accept_multiple_blocks=True)
+        if isinstance(X, dd.DataFrame):
+            # TODO: we could probably support dataframes here.
+            X = X.values
+
         transformed = [
             self._transform_col(
                 X[:, feature_idx], self.quantiles_[:, feature_idx], inverse
