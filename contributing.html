@@ -1,0 +1,470 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Contributing &mdash; dask-ml 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/style.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/explore.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/nbsphinx.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/js/custom.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dask-ML Roadmap" href="roadmap.html" />
+    <link rel="prev" title="Changelog" href="changelog.html" />
+  <link rel="shortcut icon" href="_static/images/favicon.ico"/>
+  
+  <meta name="Description" content="Contributing">
+  <meta property="og:description" content="Contributing">
+  <meta name="twitter:description" content="Contributing" />
+  <meta property="og:title" content="dask-ml 0.1 documentation - Contributing">
+  <meta property="og:image" content="https://github.com/dask.png">
+  <meta property="og:image:secure_url" content="https://github.com/dask.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="380" />
+  <meta property="og:image:height" content="380" />
+  <meta property="og:url" content="contributing.html">
+  <meta property="og:site_name" content="dask-ml 0.1 documentation">
+
+  <meta name="twitter:site" content="https://dask.org" />
+  <meta name="twitter:creator" content="@dask_dev" />
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://github.com/dask.png" />
+  <meta name="twitter:image:alt" content="dask-ml 0.1 documentation">
+  
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+    <nav id="explore-links">
+        <a href="https://docs.dask.org/">
+        <img class="caption" src="_static/images/dask-horizontal-white.svg"/>
+        </a>
+
+        <ul>
+        <li>
+            <a>Get Started</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/install.html"> Install </a></li>
+            <li><a href="https://examples.dask.org"> Examples </a></li>
+            <li><a href="https://github.com/dask/dask-tutorial"> Tutorial </a></li>
+            <li><a href="https://docs.dask.org/en/latest/why.html"> Why Dask? </a></li>
+            <li><a href="https://stories.dask.org/en/latest"> Use Cases </a></li>
+            <li><a href="https://www.youtube.com/watch?v=RA_2qdipVng&list=PLRtz5iA93T4PQvWuoMnIyEIz1fXiJ5Pri"> Talks </a></li>
+            <li><a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab"> Try Online </a></li>
+            <li><a href="https://dask.org/slides"> Slides </a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="">Algorithms</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/array.html">Arrays</a></li>
+            <li><a href="https://docs.dask.org/en/latest/dataframe.html">Dataframes</a></li>
+            <li><a href="https://docs.dask.org/en/latest/bag.html">Bags</a></li>
+            <li><a href="https://docs.dask.org/en/latest/delayed.html">Delayed (custom)</a></li>
+            <li><a href="https://docs.dask.org/en/latest/futures.html">Futures (real-time)</a></li>
+            <li><a href="http://ml.dask.org">Machine Learning</a></li>
+            <li><a href="https://xarray.pydata.org/en/latest/">XArray</a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="https://docs.dask.org/en/latest/setup.html">Setup</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/setup/single-machine.html"> Local </a></li>
+            <li><a href="https://docs.dask.org/en/latest/setup/cloud.html"> Cloud </a></li>
+            <li><a href="https://docs.dask.org/en/latest/setup/hpc.html"> HPC </a></li>
+            <li><a href="https://kubernetes.dask.org/en/latest/"> Kubernetes </a></li>
+            <li><a href="https://yarn.dask.org/en/latest/"> Hadoop / Yarn </a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a>Community</a>
+            <ul>
+            <li><a href="http://docs.dask.org/en/latest/support.html">Ask for Help</a></li>
+            <li><a href="https://github.com/dask">Github</a></li>
+            <li><a href="https://stackoverflow.com/questions/tagged/dask">Stack Overflow</a></li>
+            <li><a href="https://twitter.com/dask_dev">Twitter</a></li>
+            <li><a href="https://blog.dask.org/"> Developer Blog </a></li>
+            <li><a href="https://youtube.com/c/dask-dev"> YouTube Channel </a></li>
+            </ul>
+        </li>
+        </ul>
+
+    </nav>
+  
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> dask-ml
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.dev1+g05ef365
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Use</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cross_validation.html">Cross Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hyper-parameter-search.html">Hyper Parameter Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compose.html">Pipelines and Composite Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glm.html">Generalized Linear Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naive-bayes.html">Naive Bayes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="meta-estimators.html">Parallel Meta-estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="incremental.html">Incremental Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/api.html">API Reference</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="joblib.html">Scikit-Learn &amp; Joblib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xgboost.html">XGBoost &amp; LightGBM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch.html">PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras.html">Keras and Tensorflow</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Develop</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cloning-the-repository">Cloning the Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-an-environment">Creating an environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-dask-ml">Building dask-ml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#style">Style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-tests">Running tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coverage">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pre-commit-hooks">Pre-Commit Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conventions">Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Dask-ML Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dask-ml</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Contributing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/contributing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>Thanks for helping to build <code class="docutils literal notranslate"><span class="pre">dask-ml</span></code>!</p>
+<div class="section" id="cloning-the-repository">
+<h2>Cloning the Repository<a class="headerlink" href="#cloning-the-repository" title="Permalink to this headline">¶</a></h2>
+<p>Make a fork of the <a class="reference external" href="https://github.com/dask/dask-ml">dask-ml repo</a> and clone
+the fork</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/&lt;your-github-username&gt;/dask-ml
+cd dask-ml
+</pre></div>
+</div>
+<p>You may want to add <code class="docutils literal notranslate"><span class="pre">https://github.com/dask/dask-ml</span></code> as an upstream remote
+repository.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git remote add upstream https://github.com/dask/dask-ml
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-an-environment">
+<h2>Creating an environment<a class="headerlink" href="#creating-an-environment" title="Permalink to this headline">¶</a></h2>
+<p>We have conda environment YAML files with all the necessary dependencies
+in the <code class="docutils literal notranslate"><span class="pre">ci</span></code> directory.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda env create -f ci/environment-latest.yaml --name=dask-ml-dev
+</pre></div>
+</div>
+<p>to create a conda environment and install all the dependencies.</p>
+<p>If you’re using pip, you can view the list of all the required and optional
+dependencies within <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> (see the <code class="docutils literal notranslate"><span class="pre">install_requires</span></code> field for
+required dependencies and <code class="docutils literal notranslate"><span class="pre">extras_require</span></code> for optional dependencies).</p>
+</div>
+<div class="section" id="building-dask-ml">
+<h2>Building dask-ml<a class="headerlink" href="#building-dask-ml" title="Permalink to this headline">¶</a></h2>
+<p>Dask-ML is a pure-python repository. Development installation should be as simple as
+cloning the repository and running the following in the cloned directory:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">&quot;.[dev]&quot;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">dask</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>If you have any trouble, please open an issue on the
+<a class="reference external" href="https://github.com/dask/dask-ml/issues">dask-ml issue tracker</a>.</p>
+</div>
+<div class="section" id="style">
+<h2>Style<a class="headerlink" href="#style" title="Permalink to this headline">¶</a></h2>
+<p>Dask-ML uses <a class="reference external" href="http://black.readthedocs.io/en/stable/">black</a> for formatting
+and <a class="reference external" href="http://flake8.pycqa.org/en/latest/">flake8</a> for linting. If you installed
+dask-ml with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[dev]&quot;</span></code> these tools will already be
+installed.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>black .
+flake8
+isort -rc dask_ml tests
+</pre></div>
+</div>
+<p>You may wish to setup a
+<a class="reference external" href="https://black.readthedocs.io/en/stable/version_control_integration.html">pre-commit hook</a>
+to run black when you commit changes.</p>
+</div>
+<div class="section" id="running-tests">
+<h2>Running tests<a class="headerlink" href="#running-tests" title="Permalink to this headline">¶</a></h2>
+<p>Dask-ml uses <a class="reference external" href="https://docs.pytest.org/en/latest/">py.test</a> for testing. You
+can run tests from the main dask-ml directory as follows:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pytest tests
+</pre></div>
+</div>
+<p>Alternatively you may choose to run only a subset of the full test suite. For
+example to test only the preprocessing submodule we would run tests as follows:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pytest tests/preprocessing
+</pre></div>
+</div>
+</div>
+<div class="section" id="coverage">
+<h2>Coverage<a class="headerlink" href="#coverage" title="Permalink to this headline">¶</a></h2>
+<p>If your Pull Request decreases the lines of code covered, the CI may fail.
+Sometimes this is OK, and a maintainer will merge it anyway. To check the coverage locally,
+use</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pytest --cov --cov-report=html
+</pre></div>
+</div>
+<p>You can still use all the usual pytest command-line options in addition to those.</p>
+</div>
+<div class="section" id="pre-commit-hooks">
+<h2>Pre-Commit Hooks<a class="headerlink" href="#pre-commit-hooks" title="Permalink to this headline">¶</a></h2>
+<p>Install and build the <a class="reference external" href="https://github.com/pre-commit/pre-commit">pre commit</a> tool as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python -m pip install pre-commit
+pre-commit install
+</pre></div>
+</div>
+<p>to install a few plugins like black, isort, and flake8. These tools will automatically
+be run on each commit. You can skip the checks with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">--no-verify</span></code>.</p>
+</div>
+<div class="section" id="conventions">
+<h2>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h2>
+<p>For the most part, we follow scikit-learn’s API design. If you’re implementing
+a new estimator, it will ideally pass scikit-learn’s <a class="reference external" href="https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator">estimator check</a>.</p>
+<p>We have some additional decisions to make in the dask context. Ideally</p>
+<ol class="arabic simple">
+<li>All attributes learned during <code class="docutils literal notranslate"><span class="pre">.fit</span></code> should be <em>concrete</em>, i.e. they should
+not be dask collections.</li>
+<li>To the extent possible, transformers should support<ul>
+<li><code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">dask.Array</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">dask.DataFrame</span></code></li>
+</ul>
+</li>
+<li>If possible, transformers should accept a <code class="docutils literal notranslate"><span class="pre">columns</span></code> keyword to limit the
+transformation to just those columns, while passing through other columns
+untouched. <code class="docutils literal notranslate"><span class="pre">inverse_transform</span></code> should behave similarly (ignoring other
+columns) so that <code class="docutils literal notranslate"><span class="pre">inverse_transform(transform(X))</span></code> equals <code class="docutils literal notranslate"><span class="pre">X</span></code>.</li>
+<li>Methods returning arrays (like <code class="docutils literal notranslate"><span class="pre">.transform</span></code>, <code class="docutils literal notranslate"><span class="pre">.predict</span></code>), should return
+the same type as the input. So if a <code class="docutils literal notranslate"><span class="pre">dask.array</span></code> is passed in, a
+<code class="docutils literal notranslate"><span class="pre">dask.array</span></code> with the same chunks should be returned.</li>
+</ol>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>We use <a class="reference external" href="http://numpydoc.readthedocs.io/en/latest/format.html">numpydoc</a> for our docstrings.</p>
+<p>Building the docs is possible with</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ conda env create -f ci/environment-docs.yaml --name=dask-ml-dev-docs
+$ conda activate dask-ml-dev-docs
+$ python -m pip install -e .
+$ cd docs
+$ make html
+</pre></div>
+</div>
+<p>Examples are written as Jupyter notebooks with their output stripped, either
+manually or using <a class="reference external" href="https://github.com/kynan/nbstripout">nbstripout</a>. We want
+examples to be runnable on binder so they should be small, but include
+instructions for how to scale up to larger problems.</p>
+<p>The source for most examples is maintained in the <a class="reference external" href="https://github.com/dask/dask-examples">dask-examples</a> repository. Updates should be made
+there, and they’re automatically included as part of the Dask-ML documentation
+build process.</p>
+<p>When adding an example for new feature that’s only available in main, the
+notebook should be first included in Dask-ML repository under
+<code class="docutils literal notranslate"><span class="pre">docs/source/examples/</span></code>. These examples will be moved to
+<code class="docutils literal notranslate"><span class="pre">dask/dask-examples</span></code> as part of the Dask-ML release process.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="roadmap.html" class="btn btn-neutral float-right" title="Dask-ML Roadmap" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="changelog.html" class="btn btn-neutral float-left" title="Changelog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017, Dask developers.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

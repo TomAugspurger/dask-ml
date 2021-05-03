@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Cross Validation &mdash; dask-ml 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/style.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/explore.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/nbsphinx.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/js/custom.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hyper Parameter Search" href="hyper-parameter-search.html" />
+    <link rel="prev" title="Preprocessing" href="preprocessing.html" />
+  <link rel="shortcut icon" href="_static/images/favicon.ico"/>
+  
+  <meta name="Description" content="Cross Validation">
+  <meta property="og:description" content="Cross Validation">
+  <meta name="twitter:description" content="Cross Validation" />
+  <meta property="og:title" content="dask-ml 0.1 documentation - Cross Validation">
+  <meta property="og:image" content="https://github.com/dask.png">
+  <meta property="og:image:secure_url" content="https://github.com/dask.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="380" />
+  <meta property="og:image:height" content="380" />
+  <meta property="og:url" content="cross_validation.html">
+  <meta property="og:site_name" content="dask-ml 0.1 documentation">
+
+  <meta name="twitter:site" content="https://dask.org" />
+  <meta name="twitter:creator" content="@dask_dev" />
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://github.com/dask.png" />
+  <meta name="twitter:image:alt" content="dask-ml 0.1 documentation">
+  
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+    <nav id="explore-links">
+        <a href="https://docs.dask.org/">
+        <img class="caption" src="_static/images/dask-horizontal-white.svg"/>
+        </a>
+
+        <ul>
+        <li>
+            <a>Get Started</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/install.html"> Install </a></li>
+            <li><a href="https://examples.dask.org"> Examples </a></li>
+            <li><a href="https://github.com/dask/dask-tutorial"> Tutorial </a></li>
+            <li><a href="https://docs.dask.org/en/latest/why.html"> Why Dask? </a></li>
+            <li><a href="https://stories.dask.org/en/latest"> Use Cases </a></li>
+            <li><a href="https://www.youtube.com/watch?v=RA_2qdipVng&list=PLRtz5iA93T4PQvWuoMnIyEIz1fXiJ5Pri"> Talks </a></li>
+            <li><a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab"> Try Online </a></li>
+            <li><a href="https://dask.org/slides"> Slides </a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="">Algorithms</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/array.html">Arrays</a></li>
+            <li><a href="https://docs.dask.org/en/latest/dataframe.html">Dataframes</a></li>
+            <li><a href="https://docs.dask.org/en/latest/bag.html">Bags</a></li>
+            <li><a href="https://docs.dask.org/en/latest/delayed.html">Delayed (custom)</a></li>
+            <li><a href="https://docs.dask.org/en/latest/futures.html">Futures (real-time)</a></li>
+            <li><a href="http://ml.dask.org">Machine Learning</a></li>
+            <li><a href="https://xarray.pydata.org/en/latest/">XArray</a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="https://docs.dask.org/en/latest/setup.html">Setup</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/setup/single-machine.html"> Local </a></li>
+            <li><a href="https://docs.dask.org/en/latest/setup/cloud.html"> Cloud </a></li>
+            <li><a href="https://docs.dask.org/en/latest/setup/hpc.html"> HPC </a></li>
+            <li><a href="https://kubernetes.dask.org/en/latest/"> Kubernetes </a></li>
+            <li><a href="https://yarn.dask.org/en/latest/"> Hadoop / Yarn </a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a>Community</a>
+            <ul>
+            <li><a href="http://docs.dask.org/en/latest/support.html">Ask for Help</a></li>
+            <li><a href="https://github.com/dask">Github</a></li>
+            <li><a href="https://stackoverflow.com/questions/tagged/dask">Stack Overflow</a></li>
+            <li><a href="https://twitter.com/dask_dev">Twitter</a></li>
+            <li><a href="https://blog.dask.org/"> Developer Blog </a></li>
+            <li><a href="https://youtube.com/c/dask-dev"> YouTube Channel </a></li>
+            </ul>
+        </li>
+        </ul>
+
+    </nav>
+  
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> dask-ml
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.dev1+g05ef365
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Use</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cross Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hyper-parameter-search.html">Hyper Parameter Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compose.html">Pipelines and Composite Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glm.html">Generalized Linear Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naive-bayes.html">Naive Bayes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="meta-estimators.html">Parallel Meta-estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="incremental.html">Incremental Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/api.html">API Reference</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="joblib.html">Scikit-Learn &amp; Joblib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xgboost.html">XGBoost &amp; LightGBM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch.html">PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras.html">Keras and Tensorflow</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Develop</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Dask-ML Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dask-ml</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Cross Validation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/cross_validation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cross-validation">
+<h1>Cross Validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h1>
+<p>See the <a class="reference external" href="http:/scikit-learn.org/stable/modules/cross_validation.html">scikit-learn cross validation documentation</a> for a fuller discussion of cross validation.
+This document only describes the extensions made to support Dask arrays.</p>
+<p>The simplest way to split one or more Dask arrays is with <a class="reference internal" href="modules/generated/dask_ml.model_selection.train_test_split.html#dask_ml.model_selection.train_test_split" title="dask_ml.model_selection.train_test_split"><code class="xref py py-func docutils literal notranslate"><span class="pre">dask_ml.model_selection.train_test_split()</span></code></a>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">dask.array</span> <span class="k">as</span> <span class="nn">da</span>
+
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">dask_ml.datasets</span> <span class="kn">import</span> <span class="n">make_regression</span>
+
+<span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">dask_ml.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="gp">In [4]: </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">125</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+
+<span class="gp">In [5]: </span><span class="n">X</span>
+<span class="gh">Out[5]: </span><span class="go">dask.array&lt;normal, shape=(125, 4), dtype=float64, chunksize=(50, 4), chunktype=numpy.ndarray&gt;</span>
+</pre></div>
+</div>
+<p>The interface for splitting Dask arrays is the same as scikit-learn’s version.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="gp">In [7]: </span><span class="n">X_train</span>  <span class="c1"># A dask Array</span>
+<span class="gh">Out[7]: </span><span class="go">dask.array&lt;concatenate, shape=(112, 4), dtype=float64, chunksize=(45, 4), chunktype=numpy.ndarray&gt;</span>
+
+<span class="gp">In [8]: </span><span class="n">X_train</span><span class="o">.</span><span class="n">compute</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="gh">Out[8]: </span><span class="go"></span>
+<span class="go">array([[-0.70111012,  0.70035956, -0.04497177, -2.1252587 ],</span>
+<span class="go">       [-0.10656729, -0.19912227, -1.29342938,  0.67371525],</span>
+<span class="go">       [ 1.91329959,  1.8683167 , -1.0451914 ,  0.17189064]])</span>
+</pre></div>
+</div>
+<p>While it’s possible to pass dask arrays to <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html#sklearn.model_selection.train_test_split" title="(in scikit-learn v0.24)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.model_selection.train_test_split()</span></code></a>, we recommend
+using the Dask version for performance reasons: the Dask version is faster
+for two reasons:</p>
+<p>First, <strong>the Dask version shuffles blockwise</strong>.
+In a distributed setting, shuffling <em>between</em> blocks may require sending large amounts of data between machines, which can be slow.
+However, if there’s a strong pattern in your data, you’ll want to perform a full shuffle.</p>
+<p>Second, the Dask version avoids allocating large intermediate NumPy arrays storing the indexes for slicing.
+For very large datasets, creating and transmitting <code class="docutils literal notranslate"><span class="pre">np.arange(n_samples)</span></code> can be expensive.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="hyper-parameter-search.html" class="btn btn-neutral float-right" title="Hyper Parameter Search" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="preprocessing.html" class="btn btn-neutral float-left" title="Preprocessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017, Dask developers.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

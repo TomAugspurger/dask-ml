@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Dask-ML &mdash; dask-ml 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/style.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/explore.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/nbsphinx.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/js/custom.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Preprocessing" href="preprocessing.html" />
+  <link rel="shortcut icon" href="_static/images/favicon.ico"/>
+  
+  <meta name="Description" content="Dask-ML">
+  <meta property="og:description" content="Dask-ML">
+  <meta name="twitter:description" content="Dask-ML" />
+  <meta property="og:title" content="dask-ml 0.1 documentation - Dask-ML">
+  <meta property="og:image" content="https://github.com/dask.png">
+  <meta property="og:image:secure_url" content="https://github.com/dask.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="380" />
+  <meta property="og:image:height" content="380" />
+  <meta property="og:url" content="index.html">
+  <meta property="og:site_name" content="dask-ml 0.1 documentation">
+
+  <meta name="twitter:site" content="https://dask.org" />
+  <meta name="twitter:creator" content="@dask_dev" />
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://github.com/dask.png" />
+  <meta name="twitter:image:alt" content="dask-ml 0.1 documentation">
+  
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+    <nav id="explore-links">
+        <a href="https://docs.dask.org/">
+        <img class="caption" src="_static/images/dask-horizontal-white.svg"/>
+        </a>
+
+        <ul>
+        <li>
+            <a>Get Started</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/install.html"> Install </a></li>
+            <li><a href="https://examples.dask.org"> Examples </a></li>
+            <li><a href="https://github.com/dask/dask-tutorial"> Tutorial </a></li>
+            <li><a href="https://docs.dask.org/en/latest/why.html"> Why Dask? </a></li>
+            <li><a href="https://stories.dask.org/en/latest"> Use Cases </a></li>
+            <li><a href="https://www.youtube.com/watch?v=RA_2qdipVng&list=PLRtz5iA93T4PQvWuoMnIyEIz1fXiJ5Pri"> Talks </a></li>
+            <li><a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab"> Try Online </a></li>
+            <li><a href="https://dask.org/slides"> Slides </a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="">Algorithms</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/array.html">Arrays</a></li>
+            <li><a href="https://docs.dask.org/en/latest/dataframe.html">Dataframes</a></li>
+            <li><a href="https://docs.dask.org/en/latest/bag.html">Bags</a></li>
+            <li><a href="https://docs.dask.org/en/latest/delayed.html">Delayed (custom)</a></li>
+            <li><a href="https://docs.dask.org/en/latest/futures.html">Futures (real-time)</a></li>
+            <li><a href="http://ml.dask.org">Machine Learning</a></li>
+            <li><a href="https://xarray.pydata.org/en/latest/">XArray</a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="https://docs.dask.org/en/latest/setup.html">Setup</a>
+            <ul>
+            <li><a href="https://docs.dask.org/en/latest/setup/single-machine.html"> Local </a></li>
+            <li><a href="https://docs.dask.org/en/latest/setup/cloud.html"> Cloud </a></li>
+            <li><a href="https://docs.dask.org/en/latest/setup/hpc.html"> HPC </a></li>
+            <li><a href="https://kubernetes.dask.org/en/latest/"> Kubernetes </a></li>
+            <li><a href="https://yarn.dask.org/en/latest/"> Hadoop / Yarn </a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a>Community</a>
+            <ul>
+            <li><a href="http://docs.dask.org/en/latest/support.html">Ask for Help</a></li>
+            <li><a href="https://github.com/dask">Github</a></li>
+            <li><a href="https://stackoverflow.com/questions/tagged/dask">Stack Overflow</a></li>
+            <li><a href="https://twitter.com/dask_dev">Twitter</a></li>
+            <li><a href="https://blog.dask.org/"> Developer Blog </a></li>
+            <li><a href="https://youtube.com/c/dask-dev"> YouTube Channel </a></li>
+            </ul>
+        </li>
+        </ul>
+
+    </nav>
+  
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> dask-ml
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.dev1+g05ef365
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Use</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cross_validation.html">Cross Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hyper-parameter-search.html">Hyper Parameter Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compose.html">Pipelines and Composite Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glm.html">Generalized Linear Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naive-bayes.html">Naive Bayes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="meta-estimators.html">Parallel Meta-estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="incremental.html">Incremental Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/api.html">API Reference</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="joblib.html">Scikit-Learn &amp; Joblib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xgboost.html">XGBoost &amp; LightGBM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch.html">PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras.html">Keras and Tensorflow</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Develop</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Dask-ML Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">dask-ml</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Dask-ML</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dask-ml">
+<span id="id1"></span><h1>Dask-ML<a class="headerlink" href="#dask-ml" title="Permalink to this headline">¶</a></h1>
+<p>Dask-ML provides scalable machine learning in Python using <a class="reference external" href="https://dask.org/">Dask</a> alongside
+popular machine learning libraries like <a class="reference external" href="http://scikit-learn.org/">Scikit-Learn</a>, <a class="reference external" href="https://ml.dask.org/xgboost.html">XGBoost</a>, and others.</p>
+<p>You can try Dask-ML on a small cloud instance by clicking the following button:</p>
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/dask/dask-examples/main?filepath=machine-learning.ipynb"><img alt="https://mybinder.org/badge.svg" src="https://mybinder.org/badge.svg" /></a>
+<div class="section" id="dimensions-of-scale">
+<h2>Dimensions of Scale<a class="headerlink" href="#dimensions-of-scale" title="Permalink to this headline">¶</a></h2>
+<p>People may run into scaling challenges along a couple dimensions, and Dask-ML
+offers tools for addressing each.</p>
+<img alt="_images/dimensions_of_scale.svg" src="_images/dimensions_of_scale.svg" /><div class="section" id="challenge-1-scaling-model-size">
+<h3>Challenge 1: Scaling Model Size<a class="headerlink" href="#challenge-1-scaling-model-size" title="Permalink to this headline">¶</a></h3>
+<p>The first kind of scaling challenge comes when from your models growing so
+large or complex that it affects your workflow (shown along the vertical axis
+above). Under this scaling challenge tasks like model training, prediction, or
+evaluation steps will (eventually) complete, they just take too long. You’ve
+become compute bound.</p>
+<p>To address these challenges you’d continue to use the collections you know and
+love (like the NumPy <code class="docutils literal notranslate"><span class="pre">ndarray</span></code>, pandas <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>, or XGBoost <code class="docutils literal notranslate"><span class="pre">DMatrix</span></code>)
+and use a Dask Cluster to parallelize the workload on many machines. The
+parallelization can occur through one of our integrations (like Dask’s
+<a class="reference internal" href="joblib.html#joblib"><span class="std std-ref">joblib backend</span></a> to parallelize Scikit-Learn directly) or one of
+Dask-ML’s estimators (like our <a class="reference internal" href="hyper-parameter-search.html#hyper-parameter-search"><span class="std std-ref">hyper-parameter optimizers</span></a>).</p>
+</div>
+<div class="section" id="challenge-2-scaling-data-size">
+<h3>Challenge 2: Scaling Data Size<a class="headerlink" href="#challenge-2-scaling-data-size" title="Permalink to this headline">¶</a></h3>
+<p>The second type of scaling challenge people face is when their datasets grow
+larger than RAM (shown along the horizontal axis above). Under this scaling
+challenge, even loading the data into NumPy or pandas becomes impossible.</p>
+<p>To address these challenges, you’d use Dask’s one of Dask’s <a class="reference external" href="https://docs.dask.org/en/latest/user-interfaces.html">high-level
+collections</a> like
+(<a class="reference external" href="https://docs.dask.org/en/latest/array.html">Dask Array</a>, <a class="reference external" href="https://docs.dask.org/en/latest/dataframe.html">Dask DataFrame</a> or <a class="reference external" href="https://docs.dask.org/en/latest/bag.html">Dask Bag</a>) combined with one of Dask-ML’s
+estimators that are designed to work with Dask collections. For example you
+might use Dask Array and one of our preprocessing estimators in
+<a class="reference internal" href="modules/api.html#module-dask_ml.preprocessing" title="dask_ml.preprocessing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dask_ml.preprocessing</span></code></a>, or one of our ensemble methods in
+<a class="reference internal" href="modules/api.html#module-dask_ml.ensemble" title="dask_ml.ensemble"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dask_ml.ensemble</span></code></a>.</p>
+</div>
+<div class="section" id="not-everyone-needs-scalable-machine-learning">
+<h3>Not Everyone needs Scalable Machine Learning<a class="headerlink" href="#not-everyone-needs-scalable-machine-learning" title="Permalink to this headline">¶</a></h3>
+<p>It’s worth emphasizing that not everyone needs scalable machine learning. Tools
+like sampling can be effective. Always plot your <a class="reference external" href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html">learning curve</a>.</p>
+</div>
+</div>
+<div class="section" id="scikit-learn-api">
+<h2>Scikit-Learn API<a class="headerlink" href="#scikit-learn-api" title="Permalink to this headline">¶</a></h2>
+<p>In all cases Dask-ML endeavors to provide a single unified interface around the
+familiar NumPy, Pandas, and Scikit-Learn APIs.  Users familiar with
+Scikit-Learn should feel at home with Dask-ML.</p>
+</div>
+<div class="section" id="partner-with-other-distributed-libraries">
+<h2>Partner with other distributed libraries<a class="headerlink" href="#partner-with-other-distributed-libraries" title="Permalink to this headline">¶</a></h2>
+<p>Other machine learning libraries like XGBoost already have
+distributed solutions that work quite well.  Dask-ML makes no attempt to
+re-implement these systems.  Instead, Dask-ML makes it easy to use normal Dask
+workflows to prepare and set up data, then it deploys XGBoost
+<em>alongside</em> Dask, and hands the data over.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dask_ml.xgboost</span> <span class="kn">import</span> <span class="n">XGBRegressor</span>
+
+<span class="n">est</span> <span class="o">=</span> <span class="n">XGBRegressor</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">train_labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="xgboost.html"><span class="doc">Dask-ML + XGBoost</span></a> for more information.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="preprocessing.html" class="btn btn-neutral float-right" title="Preprocessing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017, Dask developers.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
